@@ -63,3 +63,7 @@ Bridge.Inventory.createShop = function(shopName, data)
     Citizen.Wait(100)
     exports['ox_inventory']:RegisterShop(shopName, data)
 end
+
+Bridge.Inventory.getItemData = function(itemName)
+    return exports['ox_inventory']:Items(itemName)
+end
