@@ -1,7 +1,7 @@
 Config = {} -- [dont change this]
 
 --@param Config.Debug: boolean [true = script will print debug messages, display more info etc]
-Config.Debug = false 
+Config.Debug = true 
 
 --@param Config.Logs: boolean [true = script will send logs to discord webhook, false = no logs]
 Config.Logs = true
@@ -79,7 +79,10 @@ Config.Notify = 'auto'
 ]]
 
 --@param Config.Appearance: string [set which appearance system you are using]
-Config.Appearance = 'auto'
+-- Set explicitly: 'auto' picked rcore_clothing (whose getPlayerSkin/setPlayerSkin
+-- exports don't exist in the installed build), breaking wardrobe outfit creation.
+-- The p_appearance adapter uses skinchanger events, which both installed systems handle.
+Config.Appearance = 'p_appearance'
 --[[
     auto - will try to detect appearance system automatically
     p_appearance - pScripts Appearance

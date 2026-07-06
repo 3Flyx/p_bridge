@@ -100,3 +100,41 @@ Bridge.Inventory.createShop = function(shopName, data)
         items = data.inventory
     })
 end
+
+---@param invId: number|string [player id or stash id]
+---@return inventory: table|nil [{ items = { [slot] = { name, amount, info, slot } } }]
+Bridge.Inventory.getInventory = function(invId)
+    return exports['qb-inventory']:GetInventory(invId)
+end
+
+---@param invId: number|string [player id or stash id]
+Bridge.Inventory.clearInventory = function(invId)
+    exports['qb-inventory']:ClearInventory(invId)
+end
+
+---@param stashId: string [unique stash id]
+---@param label: string [stash label]
+---@param slots: number [number of slots]
+---@param weight: number [max weight]
+-- qb-inventory creates stashes lazily when they are first opened, so nothing to
+-- pre-register here; kept for interface parity with ox_inventory.
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+    return
+end
+
+---@param playerId: number|string [player id or stash id]
+---@param slot: number [slot index]
+---@param metadata: table [new metadata to write to the slot]
+Bridge.Inventory.setMetadata = function(playerId, slot, metadata)
+    -- qb-inventory has no framework-agnostic per-slot metadata setter; use
+    -- ox_inventory if you rely on evidence analysis persisting to the item.
+    lib.print.error('setMetadata is not supported in qb-inventory, please change type in config')
+end
+
+---@param event: string [hook name]
+---@param cb: function [hook callback]
+---@param options: table|nil [hook options]
+---@return nil [inventory hooks are ox_inventory only]
+Bridge.Inventory.registerHook = function(event, cb, options)
+    return nil
+end

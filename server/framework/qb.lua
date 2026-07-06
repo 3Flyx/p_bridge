@@ -250,6 +250,35 @@ Bridge.Framework.getVehicleByPlate = function(plate)
     return result
 end
 
+--@param plate: string [vehicle plate]
+--@return { owner: string, props: string, plate: string, model: string|number }|nil
+-- Normalized owned-vehicle data, framework agnostic. Returns nil when the plate is not owned.
+-- `props` is the raw vehicle-properties JSON string (`mods`) as stored by QBCore.
+Bridge.Framework.getOwnedVehicle = function(plate)
+    if not plate then return nil end
+
+    local row = MySQL.single.await('SELECT citizenid, mods, vehicle, plate FROM player_vehicles WHERE plate = ?', {plate})
+    if not row then return nil end
+
+    return {
+        owner = row.citizenid,
+        props = row.mods,
+        plate = row.plate,
+        model = row.vehicle
+    }
+end
+
+--@param plate: string [vehicle plate]
+--@param impounded: boolean [true to mark as impounded, false to release back to the owner]
+--@return boolean [true if a row was updated]
+-- QBCore player_vehicles `state`: 0 = out, 1 = garaged, 2 = impounded.
+Bridge.Framework.setVehicleImpounded = function(plate, impounded)
+    if not plate then return false end
+
+    local affected = MySQL.update.await('UPDATE player_vehicles SET state = ? WHERE plate = ?', {impounded and 2 or 1, plate})
+    return (affected or 0) > 0
+end
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@return { name: string, label: string, grade: number, grade_name: string, grade_label: string }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
@@ -288,6 +317,14 @@ Bridge.Framework.getPlayerName = function(playerId, separate)
     end
 
     return ('%s %s'):format(xPlayer.PlayerData.charinfo.firstname, xPlayer.PlayerData.charinfo.lastname)
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return dob: string|nil [the player's date of birth]
+Bridge.Framework.getPlayerDob = function(playerId)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then return nil end
+    return xPlayer.PlayerData.charinfo.birthdate
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
@@ -407,4 +444,19 @@ lib.callback.register('p_bridge/server/framework/checkPermissions', Bridge.Frame
 --@param itemFunction: function [function to execute when the item is used]
 Bridge.Framework.registerItem = function(itemName, itemFunction)
     QBCore.Functions.CreateUseableItem(itemName, itemFunction)
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return { fingerprint: string|nil, bloodType: string|nil }|nil
+-- Forensic identifiers QB generates at character creation. Returns nil when the
+-- player can't be resolved (callers fall back to their own generated values).
+Bridge.Framework.getForensics = function(playerId)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then return nil end
+    local meta = xPlayer.PlayerData and xPlayer.PlayerData.metadata
+    if not meta then return nil end
+    return {
+        fingerprint = meta.fingerprint,
+        bloodType = meta.bloodtype,
+    }
 end

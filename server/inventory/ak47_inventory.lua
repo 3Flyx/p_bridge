@@ -57,3 +57,37 @@ Bridge.Inventory.getItemSlot = function(playerId, slot)
     local itemData = exports['ak47_inventory']:getSlot(playerId, slot)
     return itemData and {name = itemData.name, label = itemData.label, amount = itemData.amount, metadata = itemData.info or {}} or nil
 end
+
+---@param shopName: string [unique shop name]
+---@param data: table
+Bridge.Inventory.createShop = function(shopName, data)
+    while GetResourceState('ak47_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+
+    Citizen.Wait(100)
+    exports['ak47_inventory']:CreateShop(shopName, shopName, data, 'money')
+end
+
+---@param itemName: string [item name]
+Bridge.Inventory.getItemData = function(itemName)
+    return exports['ak47_inventory']:Items(itemName)
+end
+
+---@param stashId: string [unique stash id]
+---@param label: string [stash label]
+---@param slots: number [number of slots]
+---@param weight: number [max weight]
+Bridge.Inventory.registerStash = function(stashId, label, slots, weight)
+    while GetResourceState('ak47_inventory') ~= 'started' do
+        Citizen.Wait(100)
+    end
+
+    Citizen.Wait(100)
+    exports['ak47_inventory']:CreateInventory(stashId, {
+        label = label,
+        slots = slots,
+        maxWeight = weight,
+        type = 'stash'
+    })
+end

@@ -97,6 +97,35 @@ Bridge.Framework.getUniqueId = function(playerId, isCitizenId)
     return isCitizenId and xPlayer[Config.FrameworkUniqueId['nd']] or xPlayer.identifier
 end
 
+--@param plate: string [vehicle plate]
+--@return { owner: string, props: string, plate: string, model: string|number }|nil
+-- Normalized owned-vehicle data, framework agnostic. Returns nil when the plate is not owned.
+-- NOT BEEN ABLE TO TEST IT, CREATE PULL REQUEST IF THERE IS SOME ISSUES :)
+Bridge.Framework.getOwnedVehicle = function(plate)
+    if not plate then return nil end
+
+    local row = MySQL.single.await('SELECT owner, properties, plate FROM nd_vehicles WHERE plate = ?', {plate})
+    if not row then return nil end
+
+    return {
+        owner = row.owner,
+        props = row.properties,
+        plate = row.plate,
+        model = nil
+    }
+end
+
+--@param plate: string [vehicle plate]
+--@param impounded: boolean [true to mark as impounded, false to release back to the owner]
+--@return boolean [true if a row was updated]
+-- NOT BEEN ABLE TO TEST IT, CREATE PULL REQUEST IF THERE IS SOME ISSUES :)
+Bridge.Framework.setVehicleImpounded = function(plate, impounded)
+    if not plate then return false end
+
+    local affected = MySQL.update.await('UPDATE nd_vehicles SET stored = ? WHERE plate = ?', {impounded and 0 or 1, plate})
+    return (affected or 0) > 0
+end
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@return { name: string, label: string, grade: number, grade_name: string, grade_label: string }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
@@ -130,6 +159,14 @@ Bridge.Framework.getPlayerName = function(playerId, separate)
     end
 
     return ('%s %s'):format(xPlayer.firstname, xPlayer.lastname)
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return dob: string|nil [the player's date of birth]
+Bridge.Framework.getPlayerDob = function(playerId)
+    local xPlayer = type(playerId) == 'number' and exports["ND_Core"]:getPlayer(playerId) or Bridge.Framework.getPlayerByUniqueId(playerId)
+    if not xPlayer then return nil end
+    return xPlayer.dob
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

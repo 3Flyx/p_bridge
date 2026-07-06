@@ -206,6 +206,36 @@ Bridge.Framework.getVehicleByPlate = function(plate)
     return result
 end
 
+--@param plate: string [vehicle plate]
+--@return { owner: string, props: string, plate: string, model: string|number }|nil
+-- Normalized owned-vehicle data, framework agnostic. Returns nil when the plate is not owned.
+-- `props` is the raw vehicle-properties JSON string as stored by the framework.
+Bridge.Framework.getOwnedVehicle = function(plate)
+    if not plate then return nil end
+
+    local row = MySQL.single.await('SELECT owner, vehicle, plate FROM owned_vehicles WHERE plate = ?', {plate})
+    if not row then return nil end
+
+    return {
+        owner = row.owner,
+        props = row.vehicle,
+        plate = row.plate,
+        model = nil
+    }
+end
+
+--@param plate: string [vehicle plate]
+--@param impounded: boolean [true to mark as impounded, false to release back to the owner]
+--@return boolean [true if a row was updated]
+-- ESX owned_vehicles has no dedicated impound column, so we toggle `stored`
+-- (0 = out of garage / impounded, 1 = back in garage / released).
+Bridge.Framework.setVehicleImpounded = function(plate, impounded)
+    if not plate then return false end
+
+    local affected = MySQL.update.await('UPDATE owned_vehicles SET stored = ? WHERE plate = ?', {impounded and 0 or 1, plate})
+    return (affected or 0) > 0
+end
+
 --@param playerId: number|string [existing player id or unique identifier]
 --@return { name: string, label: string, grade: number, grade_name: string, grade_label: string }
 -- If playerId is a number, it fetches by ID; if it's a string, it fetches by identifier
@@ -244,6 +274,14 @@ Bridge.Framework.getPlayerName = function(playerId, separate)
     end
 
     return ('%s %s'):format(xPlayer.get('firstName'), xPlayer.get('lastName'))
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@return dob: string|nil [the player's date of birth]
+Bridge.Framework.getPlayerDob = function(playerId)
+    local xPlayer = type(playerId) == 'number' and ESX.GetPlayerFromId(playerId) or ESX.GetPlayerFromIdentifier(playerId)
+    if not xPlayer then return nil end
+    return xPlayer.get('dateofbirth')
 end
 
 --@param playerId: number|string [existing player id or unique identifier]

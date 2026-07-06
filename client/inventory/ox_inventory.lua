@@ -28,3 +28,13 @@ end
 Bridge.Inventory.getPlayerItems = function()
     return exports['ox_inventory']:GetPlayerItems()
 end
+
+---@return weapon: table|nil [currently equipped weapon { name, label, metadata, slot, ... } or nil]
+Bridge.Inventory.getCurrentWeapon = function()
+    return exports.ox_inventory:getCurrentWeapon()
+end
+
+---@param state: boolean [true to force-holster/disarm the equipped weapon]
+Bridge.Inventory.disarm = function(state)
+    exports.ox_inventory:disarm(state)
+end
