@@ -1,7 +1,7 @@
 Config = {} -- [dont change this]
 
 --@param Config.Debug: boolean [true = script will print debug messages, display more info etc]
-Config.Debug = true 
+Config.Debug = false 
 
 --@param Config.Logs: boolean [true = script will send logs to discord webhook, false = no logs]
 Config.Logs = true
