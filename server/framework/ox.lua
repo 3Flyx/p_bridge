@@ -267,6 +267,35 @@ Bridge.Framework.addPlayerLicense = function(playerId, license)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been removed, false if not]
+Bridge.Framework.removePlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.removeLicense(license)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param key: string [metadata key, e.g., 'callsign']
+--@param value: any [metadata value]
+--@return boolean [true if metadata has been set, false if not]
+Bridge.Framework.setPlayerMetadata = function(playerId, key, value)
+    local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.set(key, value, true)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@param requiredGroups: table [list of required groups]
 Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
     local xPlayer = type(playerId) == 'number' and Ox.GetPlayerFromFilter({ source = playerId }) or Ox.GetPlayerFromFilter({ identifier = uniqueId })

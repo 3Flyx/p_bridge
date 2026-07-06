@@ -268,6 +268,46 @@ Bridge.Framework.addPlayerLicense = function(playerId, license)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been removed, false if not]
+Bridge.Framework.removePlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and exports["ND_Core"]:getPlayer(playerId) or Bridge.Framework.getPlayerByUniqueId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    local licenses = xPlayer.getMetadata('licenses')
+    if type(licenses) ~= 'table' then
+        return false
+    end
+
+    for i = #licenses, 1, -1 do
+        if licenses[i].type == license then
+            table.remove(licenses, i)
+        end
+    end
+
+    xPlayer.setMetadata('licenses', licenses)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param key: string [metadata key, e.g., 'callsign']
+--@param value: any [metadata value]
+--@return boolean [true if metadata has been set, false if not]
+Bridge.Framework.setPlayerMetadata = function(playerId, key, value)
+    local xPlayer = type(playerId) == 'number' and exports["ND_Core"]:getPlayer(playerId) or Bridge.Framework.getPlayerByUniqueId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.setMetadata(key, value)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@param requiredGroups: table [list of required groups]
 Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
     local xPlayer = type(playerId) == 'number' and exports['qbx_core']:GetPlayer(playerId) or exports['qbx_core']:GetPlayerByCitizenId(playerId)

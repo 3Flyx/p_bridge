@@ -421,6 +421,36 @@ Bridge.Framework.addPlayerLicense = function(playerId, license)
 end
 
 --@param playerId: number|string [existing player id or unique identifier]
+--@param license: string [license type, e.g., 'driver', 'weapon']
+--@return boolean [true if license has been removed, false if not]
+Bridge.Framework.removePlayerLicense = function(playerId, license)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.PlayerData.metadata.licences[license] = false
+    xPlayer.Functions.SetMetaData('licences', xPlayer.PlayerData.metadata.licences)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
+--@param key: string [metadata key, e.g., 'callsign']
+--@param value: any [metadata value]
+--@return boolean [true if metadata has been set, false if not]
+Bridge.Framework.setPlayerMetadata = function(playerId, key, value)
+    local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
+    if not xPlayer then
+        lib.print.error(('No player found with ID: %s\nInvoker: %s'):format(playerId, GetInvokingResource() or GetCurrentResourceName()))
+        return false
+    end
+
+    xPlayer.Functions.SetMetaData(key, value)
+    return true
+end
+
+--@param playerId: number|string [existing player id or unique identifier]
 --@param requiredGroups: table [list of required groups]
 Bridge.Framework.checkPermissions = function(playerId, requiredGroups)
     local xPlayer = type(playerId) == 'number' and QBCore.Functions.GetPlayer(playerId) or QBCore.Functions.GetPlayerByCitizenId(playerId)
