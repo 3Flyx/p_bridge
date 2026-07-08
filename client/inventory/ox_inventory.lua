@@ -36,5 +36,5 @@ end
 
 ---@param state: boolean [true to force-holster/disarm the equipped weapon]
 Bridge.Inventory.disarm = function(state)
-    exports.ox_inventory:disarm(state)
+    TriggerEvent('ox_inventory:disarm', true)
 end
