@@ -57,6 +57,7 @@ Config.Inventory = 'auto'
     ak47_inventory - Ak47 Inventory
     origen_inventory - Origen Inventory
     jaksam_inventory - Jaksam Inventory
+    one_inventory - One Studios Inventory
     standalone - Standalone framework inventory
 
     -- open ticket on our discord if you want to add your inventory system [discord.gg/piotreqscripts]
