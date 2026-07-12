@@ -318,7 +318,8 @@ Bridge.Framework.removeMoney = function(playerId, account, amount)
         return false
     end
 
-    xPlayer.removeAccountMoney(account, amount)
+    -- ESX has no 'cash' account; callers use the shared 'cash'/'bank' naming
+    xPlayer.removeAccountMoney(account == 'cash' and 'money' or account, amount)
     return true
 end
 
@@ -333,7 +334,8 @@ Bridge.Framework.addMoney = function(playerId, account, amount)
         return false
     end
 
-    xPlayer.addAccountMoney(account, amount)
+    -- ESX has no 'cash' account; callers use the shared 'cash'/'bank' naming
+    xPlayer.addAccountMoney(account == 'cash' and 'money' or account, amount)
     return true
 end
 
